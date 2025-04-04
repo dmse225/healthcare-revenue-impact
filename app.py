@@ -1,22 +1,27 @@
-def calculate_revenue_impact(base_fees, visit_volumes, incentive_percent): 
-    """
-    Calculates the total revenue impact of an incentive adjustment.
-    
-    Parameters:
-    base_fees (list): List of base fee schedules for each CPT code.
-    visit_volumes (list): Corresponding visit volumes for each CPT code.
-    incentive_percent (float): Outcome Incentive percentage (e.g., 10 for 10%).
-    
-    Returns:
-    float: Total additional revenue from the incentive adjustment.
-    """
-    total_impact = sum((fee * volume * (incentive_percent / 100)) for fee, volume in zip(base_fees, visit_volumes))
+import streamlit as st 
+
+def calculate_revenue_impact(base_fees, visit_volumes, incentive_percent):
+    total_impact = sum((fee * (incentive_percent / 100)) * volume for fee, volume in zip(base_fees, visit_volumes))
     return total_impact
 
-# Example Usage
-base_fees = [50, 75, 100] # Example CPT code fees
-visit_volumes = [1500, 2000, 1000] # Example visit volumes
-incentive_percent = 10 # Example incentive percentage
+# Streamlit UI
+st.title("Healthcare Revenue Impact Calculator")
+st.write("Calculate the total revenue impact of an incentive adjustment.")
 
-total_revenue_impact = calculate_revenue_impact(base_fees, visit_volumes, incentive_percent)
-print(f"Total Revenue Impact: ${total_revenue_impact:,.2f}")
+# User Inputs
+base_fees = st.text_input("Enter base fees (comma-separated):", "75, 200, 100")
+visit_volumes = st.text_input("Enter visit volumes (comma-separated):", "1500, 2000, 1800")
+incentive_percent = st.number_input("Enter incentive percent:", min_value=0.0, max_value=100.0, value=10.0)
+
+# Convert inputs to lists
+try:
+    base_fees = [float(x.strip()) for x in base_fees.split(",")]
+    visit_volumes = [int(x.strip()) for x in visit_volumes.split(",")]
+
+    if len(base_fees) == len(visit_volumes):
+        total_revenue_impact = calculate_revenue_impact(base_fees, visit_volumes, incentive_percent)
+        st.success(f"Total Revenue Impact: ${total_revenue_impact:,.2f}")
+    else:
+        st.error("Error: Base fees and visit volumes must have the same number of values.")
+except ValueError:
+    st.error("Please enter valid numbers for base fees and visit volumes.")
